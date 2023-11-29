@@ -47,9 +47,8 @@ def _format_date(datetime_obj):
     Format datetime to same format as used on ASX.com.au
     """
 
-    datetime_string = ''
-
-    if datetime_obj is not None:
-        datetime_string = datetime_obj.strftime('%Y-%m-%dT%H:%M:%S%z')
-
-    return datetime_string
+    return (
+        datetime_obj.strftime('%Y-%m-%dT%H:%M:%S%z')
+        if datetime_obj is not None
+        else ''
+    )

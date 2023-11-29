@@ -21,7 +21,7 @@ def load():
 
     # build the config yml file path
     rel_path = os.path.dirname(__file__)
-    yaml_path = "%s/config.yml" % rel_path
+    yaml_path = f"{rel_path}/config.yml"
 
     # load config file
     with open(yaml_path, "r") as yaml_stream:
@@ -40,17 +40,11 @@ def get(key):
 
     global _config
 
-    value = None
-
     # lazy load the config yaml
     if len(_config) == 0:
         load()
 
-    # get value from config dict
-    if key in _config:
-        value = _config[key]
-
-    return value
+    return _config[key] if key in _config else None
 
 
 def set(key, value):

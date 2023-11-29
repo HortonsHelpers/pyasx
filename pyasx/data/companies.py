@@ -37,7 +37,7 @@ def get_listed_companies():
 
     except requests.exceptions.HTTPError as ex:
 
-        raise pyasx.data.LookupError("Failed to lookup listed companies; %s" % str(ex))
+        raise pyasx.data.LookupError(f"Failed to lookup listed companies; {str(ex)}")
 
     # parse the CSV result, piping it to a temp file to make the process more memory efficient
     with tempfile.NamedTemporaryFile("w+") as temp_stream:
@@ -51,7 +51,7 @@ def get_listed_companies():
         temp_iter = iter(temp_stream.readline, '');
 
         # skip the first 3 rows of the CSV as they are header rows
-        for i in range(0, 3):
+        for _ in range(0, 3):
             next(temp_iter)
 
         # read the stream back in & parse out the company details from each row
@@ -108,27 +108,39 @@ def _normalise_share_dividend_info(raw):
 # normalise the basic company info as part of get_company_info()
 def _normalise_company_info(raw):
 
-    company_info = {}
-
-    company_info['ticker'] = raw['code'] if 'code' in raw else ''
-    company_info['name'] = raw['name_full'] if 'name_full' in raw else ''
-    company_info['name_short'] = raw['name_abbrev'] if 'name_abbrev' in raw else ''
-    company_info['principal_activities'] = raw['principal_activities'] if 'principal_activities' in raw else ''
-    company_info['gics_industry'] = raw['industry_group_name'] if 'industry_group_name' in raw else ''
-    company_info['gics_sector'] = raw['sector_name'] if 'sector_name' in raw else ''
-    company_info['listing_date'] = raw['listing_date'] if 'listing_date' in raw else ''
-    company_info['delisting_date'] = raw['delisting_date'] if 'delisting_date' in raw else ''
-    company_info['website'] = raw['web_address'] if 'web_address' in raw else ''
-    company_info['mailing_address'] = raw['mailing_address'] if 'mailing_address' in raw else ''
-    company_info['phone_number'] = raw['phone_number'] if 'phone_number' in raw else ''
-    company_info['fax_number'] = raw['fax_number'] if 'fax_number' in raw else ''
-    company_info['registry_name'] = raw['registry_name'] if 'registry_name' in raw else ''
-    company_info['registry_name'] = raw['registry_name'] if 'registry_name' in raw else ''
-    company_info['registry_phone_number'] = raw['registry_phone_number'] if 'registry_phone_number' in raw else ''
-    company_info['foreign_exempt'] = raw['foreign_exempt'] if 'foreign_exempt' in raw else False
-    company_info['products'] = raw['products'] if 'products' in raw else []
-
-    company_info['last_dividend'] = _normalise_share_dividend_info(raw)
+    company_info = {
+        'ticker': raw['code'] if 'code' in raw else '',
+        'name': raw['name_full'] if 'name_full' in raw else '',
+        'name_short': raw['name_abbrev'] if 'name_abbrev' in raw else '',
+        'principal_activities': raw['principal_activities']
+        if 'principal_activities' in raw
+        else '',
+        'gics_industry': raw['industry_group_name']
+        if 'industry_group_name' in raw
+        else '',
+        'gics_sector': raw['sector_name'] if 'sector_name' in raw else '',
+        'listing_date': raw['listing_date'] if 'listing_date' in raw else '',
+        'delisting_date': raw['delisting_date']
+        if 'delisting_date' in raw
+        else '',
+        'website': raw['web_address'] if 'web_address' in raw else '',
+        'mailing_address': raw['mailing_address']
+        if 'mailing_address' in raw
+        else '',
+        'phone_number': raw['phone_number'] if 'phone_number' in raw else '',
+        'fax_number': raw['fax_number'] if 'fax_number' in raw else '',
+        'registry_name': raw['registry_name']
+        if 'registry_name' in raw
+        else '',
+        'registry_phone_number': raw['registry_phone_number']
+        if 'registry_phone_number' in raw
+        else '',
+        'foreign_exempt': raw['foreign_exempt']
+        if 'foreign_exempt' in raw
+        else False,
+        'products': raw['products'] if 'products' in raw else [],
+        'last_dividend': _normalise_share_dividend_info(raw),
+    }
 
     # parse dates to datetime objects
     company_info['listing_date'] = pyasx.data._parse_datetime(company_info['listing_date'])
@@ -164,25 +176,20 @@ def get_company_info(ticker):
         if response.status_code == 404:
             # 404 not found, therefore unknown ticker
 
-            raise pyasx.data.UnknownTickerException(
-                "Unknown company ticker %s" % ticker
-            )
+            raise pyasx.data.UnknownTickerException(f"Unknown company ticker {ticker}")
 
-        else:
             # otherwise its an error, raise as status so we get a decent description
             # to return in the exception
 
-            try:
+        try:
 
-                response.raise_for_status()
+            response.raise_for_status()
 
-            except HTTPError as ex:
+        except HTTPError as ex:
 
-                raise pyasx.data.LookupError(
-                    "Failed to lookup company info for %s; HTTP status %s" % (
-                        ticker, str(ex)
-                    )
-                )
+            raise pyasx.data.LookupError(
+                f"Failed to lookup company info for {ticker}; HTTP status {str(ex)}"
+            )
 
     # parse response & normalise
 
@@ -211,14 +218,26 @@ def _normalise_annoucements(raw_annoucements):
 
         for raw_annoucement in raw_annoucements['data']:
 
-            annoucement = {}
-            annoucement['url'] = raw_annoucement['url'] if 'url' in raw_annoucement else ''
-            annoucement['title'] = raw_annoucement['header'] if 'header' in raw_annoucement else ''
-            annoucement['document_date'] = raw_annoucement['document_date'] if 'document_date' in raw_annoucement else ''
-            annoucement['release_date'] = raw_annoucement['document_release_date'] if 'document_release_date' in raw_annoucement else ''
-            annoucement['num_pages'] = raw_annoucement['number_of_pages'] if 'number_of_pages' in raw_annoucement else ''
-            annoucement['size'] = raw_annoucement['size'] if 'size' in raw_annoucement else ''
-
+            annoucement = {
+                'url': raw_annoucement['url']
+                if 'url' in raw_annoucement
+                else '',
+                'title': raw_annoucement['header']
+                if 'header' in raw_annoucement
+                else '',
+                'document_date': raw_annoucement['document_date']
+                if 'document_date' in raw_annoucement
+                else '',
+                'release_date': raw_annoucement['document_release_date']
+                if 'document_release_date' in raw_annoucement
+                else '',
+                'num_pages': raw_annoucement['number_of_pages']
+                if 'number_of_pages' in raw_annoucement
+                else '',
+                'size': raw_annoucement['size']
+                if 'size' in raw_annoucement
+                else '',
+            }
             # parse dates to datetime objects
             annoucement['document_date'] = pyasx.data._parse_datetime(annoucement['document_date'])
             annoucement['release_date'] = pyasx.data._parse_datetime(annoucement['release_date'])
@@ -251,15 +270,11 @@ def get_company_announcements(ticker):
     except requests.exceptions.HTTPError as ex:
 
         raise pyasx.data.LookupError(
-            "Failed to lookup announcements for %s; %s" % (
-                ticker, str(ex)
-            )
+            f"Failed to lookup announcements for {ticker}; {str(ex)}"
         )
 
     # parse response & normalise
 
     raw_announcements = response.json()
 
-    announcements = _normalise_annoucements(raw_announcements)
-
-    return announcements
+    return _normalise_annoucements(raw_announcements)

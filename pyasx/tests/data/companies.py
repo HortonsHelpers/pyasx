@@ -40,14 +40,12 @@ class CompaniesTest(unittest.TestCase):
 
         # build the mock CSV data based on self.get_listed_companies_data
 
-        for i in range(0, 3):  # header
+        for _ in range(0, 3):
             self.get_listed_companies_mock+= "\n"
 
         for row in self.get_listed_companies_data:
 
-            csv_row = ",".join(row)
-            csv_row += "\n"
-
+            csv_row = ",".join(row) + "\n"
             self.get_listed_companies_mock += csv_row
 
 
@@ -132,16 +130,12 @@ class CompaniesTest(unittest.TestCase):
             # this is the test
             companies = pyasx.data.companies.get_listed_companies()
 
-            # verify data is all correct
-            i = 0;
-            for company in companies:
+            for i, company in enumerate(companies):
                 company_data = self.get_listed_companies_data[i]
 
                 self.assertEqual(company["name"], company_data[0])
                 self.assertEqual(company["ticker"], company_data[1])
                 self.assertEqual(company["gics_industry"], company_data[2])
-
-                i += 1
 
 
     def testGetListedCompaniesLive(self):
@@ -214,9 +208,7 @@ class CompaniesTest(unittest.TestCase):
             # this is the test
             announcements = pyasx.data.companies.get_company_announcements('CBA')
 
-            # verify data is all correct against the mock data
-            i = 0;
-            for announcement in announcements:
+            for i, announcement in enumerate(announcements):
                 announcement_data = self.get_company_announcements_mock['data'][i]
 
                 self.assertEqual(announcement["title"], announcement_data["header"])
@@ -234,8 +226,6 @@ class CompaniesTest(unittest.TestCase):
 
                 self.assertEqual(announcement["num_pages"], announcement_data["number_of_pages"])
                 self.assertEqual(announcement["size"], announcement_data["size"])
-
-                i += 1
 
 
     def testGetCompanyAnnouncementsLive(self):

@@ -38,7 +38,7 @@ def get_listed_securities():
 
     except requests.exceptions.HTTPError as ex:
 
-        raise pyasx.data.LookupError("Failed to lookup listed securities; %s" % str(ex))
+        raise pyasx.data.LookupError(f"Failed to lookup listed securities; {str(ex)}")
 
     # parse the CSV result, piping it to a temp file to make the process more memory efficient
     with tempfile.NamedTemporaryFile("w+") as temp_stream:
@@ -52,7 +52,7 @@ def get_listed_securities():
         temp_iter = iter(temp_stream.readline, '');
 
         # skip the first 5 rows of the CSV as they are header rows
-        for i in range(0, 5):
+        for _ in range(0, 5):
             next(temp_iter)
 
         # read the stream back in & parse out the company details from each row
@@ -98,39 +98,72 @@ def _normalise_security_info(raw):
     always present, cleanup names etc.
     """
 
-    security_info = {}
-
-    security_info['ticker'] = raw['code'] if 'code' in raw else ''
-    security_info['isin'] = raw['isin_code'] if 'isin_code' in raw else ''
-    security_info['type'] = raw['desc_full'] if 'desc_full' in raw else ''
-    security_info['open_price'] = raw['open_price'] if 'open_price' in raw else ''
-    security_info['last_price'] = raw['last_price'] if 'last_price' in raw else ''
-    security_info['bid_price'] = raw['bid_price'] if 'bid_price' in raw else ''
-    security_info['offer_price'] = raw['offer_price'] if 'offer_price' in raw else ''
-    security_info['last_trade_date'] = raw['last_trade_date'] if 'last_trade_date' in raw else ''
-    security_info['day_high_price'] = raw['day_high_price'] if 'day_high_price' in raw else ''
-    security_info['day_low_price'] = raw['day_low_price'] if 'day_low_price' in raw else ''
-    security_info['day_change_price'] = raw['change_price'] if 'change_price' in raw else ''
-    security_info['day_change_percent'] = raw['change_in_percent'] if 'change_in_percent' in raw else ''
-    security_info['day_volume'] = raw['volume'] if 'volume' in raw else ''
-    security_info['prev_day_close_price'] = raw['previous_close_price'] if 'previous_close_price' in raw else ''
-    security_info['prev_day_change_percent'] = raw['previous_day_percentage_change'] if 'previous_day_percentage_change' in raw else ''
-    security_info['year_high_price'] = raw['year_high_price'] if 'year_high_price' in raw else ''
-    security_info['year_high_date'] = raw['year_high_date'] if 'year_high_date' in raw else ''
-    security_info['year_low_price'] = raw['year_low_price'] if 'year_low_price' in raw else ''
-    security_info['year_low_date'] = raw['year_low_date'] if 'year_low_date' in raw else ''
-    security_info['year_open_price'] = raw['year_open_price'] if 'year_open_price' in raw else ''
-    security_info['year_change_price'] = raw['year_change_price'] if 'year_change_price' in raw else ''
-    security_info['year_change_percent'] = raw['year_change_in_percentage'] if 'year_change_in_percentage' in raw else ''
-    security_info['average_daily_volume'] = raw['average_daily_volume'] if 'average_daily_volume' in raw else ''
-    security_info['pe'] = raw['pe'] if 'pe' in raw else ''
-    security_info['eps'] = raw['eps'] if 'eps' in raw else ''
-    security_info['annual_dividend_yield'] = raw['annual_dividend_yield'] if 'annual_dividend_yield' in raw else ''
-    security_info['securities_outstanding'] = raw['number_of_shares'] if 'number_of_shares' in raw else ''
-    security_info['market_cap'] = raw['market_cap'] if 'market_cap' in raw else ''
-    security_info['is_suspended'] = raw['suspended'] if 'suspended' in raw else ''
-
-    security_info['indices'] = _normalise_security_indices_info(raw)
+    security_info = {
+        'ticker': raw['code'] if 'code' in raw else '',
+        'isin': raw['isin_code'] if 'isin_code' in raw else '',
+        'type': raw['desc_full'] if 'desc_full' in raw else '',
+        'open_price': raw['open_price'] if 'open_price' in raw else '',
+        'last_price': raw['last_price'] if 'last_price' in raw else '',
+        'bid_price': raw['bid_price'] if 'bid_price' in raw else '',
+        'offer_price': raw['offer_price'] if 'offer_price' in raw else '',
+        'last_trade_date': raw['last_trade_date']
+        if 'last_trade_date' in raw
+        else '',
+        'day_high_price': raw['day_high_price']
+        if 'day_high_price' in raw
+        else '',
+        'day_low_price': raw['day_low_price']
+        if 'day_low_price' in raw
+        else '',
+        'day_change_price': raw['change_price']
+        if 'change_price' in raw
+        else '',
+        'day_change_percent': raw['change_in_percent']
+        if 'change_in_percent' in raw
+        else '',
+        'day_volume': raw['volume'] if 'volume' in raw else '',
+        'prev_day_close_price': raw['previous_close_price']
+        if 'previous_close_price' in raw
+        else '',
+        'prev_day_change_percent': raw['previous_day_percentage_change']
+        if 'previous_day_percentage_change' in raw
+        else '',
+        'year_high_price': raw['year_high_price']
+        if 'year_high_price' in raw
+        else '',
+        'year_high_date': raw['year_high_date']
+        if 'year_high_date' in raw
+        else '',
+        'year_low_price': raw['year_low_price']
+        if 'year_low_price' in raw
+        else '',
+        'year_low_date': raw['year_low_date']
+        if 'year_low_date' in raw
+        else '',
+        'year_open_price': raw['year_open_price']
+        if 'year_open_price' in raw
+        else '',
+        'year_change_price': raw['year_change_price']
+        if 'year_change_price' in raw
+        else '',
+        'year_change_percent': raw['year_change_in_percentage']
+        if 'year_change_in_percentage' in raw
+        else '',
+        'average_daily_volume': raw['average_daily_volume']
+        if 'average_daily_volume' in raw
+        else '',
+        'pe': raw['pe'] if 'pe' in raw else '',
+        'eps': raw['eps'] if 'eps' in raw else '',
+        'annual_dividend_yield': raw['annual_dividend_yield']
+        if 'annual_dividend_yield' in raw
+        else '',
+        'securities_outstanding': raw['number_of_shares']
+        if 'number_of_shares' in raw
+        else '',
+        'market_cap': raw['market_cap'] if 'market_cap' in raw else '',
+        'is_suspended': raw['suspended'] if 'suspended' in raw else '',
+        'indices': _normalise_security_indices_info(raw),
+    }
 
     # parse dates to datetime objects
     security_info['last_trade_date'] = pyasx.data._parse_datetime(security_info['last_trade_date'])
@@ -162,30 +195,23 @@ def get_security_info(ticker):
         if response.status_code == 404:
             # 404 not found, therefore unknown ticker
 
-            raise pyasx.data.UnknownTickerException(
-                "Unknown security ticker %s" % ticker
-            )
+            raise pyasx.data.UnknownTickerException(f"Unknown security ticker {ticker}")
 
-        else:
             # otherwise its an error, raise as status so we get a decent description
             # to return in the exception
 
-            try:
+        try:
 
-                response.raise_for_status()
+            response.raise_for_status()
 
-            except HTTPError as ex:
+        except HTTPError as ex:
 
-                raise pyasx.data.LookupError(
-                    "Failed to lookup company info for %s; HTTP status %s" % (
-                        ticker, str(ex)
-                    )
-                )
+            raise pyasx.data.LookupError(
+                f"Failed to lookup company info for {ticker}; HTTP status {str(ex)}"
+            )
 
     # parse response & normalise
 
     raw_info = response.json()
 
-    security_info = _normalise_security_info(raw_info)
-
-    return security_info
+    return _normalise_security_info(raw_info)

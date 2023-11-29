@@ -38,14 +38,12 @@ class SecuritiesTest(unittest.TestCase):
 
         # build the mock CSV data based on self.get_listed_companies_data
 
-        for i in range(0, 5):  # header
+        for _ in range(0, 5):
             self.get_listed_securities_mock += "HEADER\tROW\n"
 
         for row in self.get_listed_securities_data:
 
-            csv_row = "\t".join(row)
-            csv_row += "\n"
-
+            csv_row = "\t".join(row) + "\n"
             self.get_listed_securities_mock += csv_row
 
 
@@ -117,17 +115,13 @@ class SecuritiesTest(unittest.TestCase):
             # this is the test
             securities = pyasx.data.securities.get_listed_securities()
 
-            # verify data is all correct
-            i = 0;
-            for security in securities:
+            for i, security in enumerate(securities):
                 security_data = self.get_listed_securities_data[i]
 
                 self.assertEqual(security["ticker"], security_data[0])
                 self.assertEqual(security["name"], security_data[1])
                 self.assertEqual(security["type"], security_data[2])
                 self.assertEqual(security["isin"], security_data[3])
-
-                i += 1
 
 
     def testGetListedSecuritiesLive(self):
